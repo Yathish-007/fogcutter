@@ -1,12 +1,19 @@
+# Python
 __pycache__/
 *.py[cod]
 *.so
-.pytest_cache/
-dist/
-build/
-*.egg-info/
+
+# Environment
+.env
 .venv/
+venv/
 env/
+
+# IDE
 .vscode/
 .idea/
-.DS_Store
+
+# Google Credentials (if they are files)
+*.json
+!config.json   # If you have non-secret configs, un-ignore them, but be careful!
+google-credentials.json

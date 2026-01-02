@@ -1,0 +1,19 @@
+# Example Configuration for Fogcutter
+# Rename this to fogcutter.toml and place in project root or ~/.config/
+
+[tool.fogcutter]
+# Provider Selection
+default_provider = "gemini"  # "openai" or "gemini"
+
+# OpenAI Settings
+openai_model = "gpt-4o"
+# openai_api_key = "sk-..."  (Better to use env var: FOGCUTTER_OPENAI_API_KEY)
+
+# Gemini Settings
+gemini_model = "gemini-1.5-pro"
+gemini_project_id = "my-gcp-project"
+gemini_vertex_ai = true
+
+# Sampling Settings
+n_samples = 20
+temperature = 0.5
