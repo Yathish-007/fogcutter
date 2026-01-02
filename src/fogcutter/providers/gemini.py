@@ -5,6 +5,7 @@ import google.generativeai as genai
 from google.generativeai.types import GenerationConfig
 from .base import LogitsProvider, SamplerProvider
 
+
 class GeminiProvider(LogitsProvider, SamplerProvider):
     def __init__(self, model: str, api_key: Optional[str] = None, vertex_ai: bool = False, project_id: Optional[str] = None, location: str = "us-central1") -> None:
         self.model_name = model
@@ -20,22 +21,40 @@ class GeminiProvider(LogitsProvider, SamplerProvider):
                 genai.configure(api_key=api_key)
             self._model = genai.GenerativeModel(model)
 
-    # --- 1. Async Parallel Method (The one we use) ---
+    # --- 1. Async Parallel Method ---
     async def sample_async(self, prompt: str, n: int = 1, **kwargs: Any) -> List[str]:
         """Generate n completions in parallel."""
+        
+        # 1. Extract arguments meant for GenerationConfig
         config_args = {}
+        
+        # Temperature
         if 'temperature' in kwargs:
             config_args['temperature'] = kwargs.pop('temperature')
+            
+        # Response Schema (Structured Output)
+        if 'response_schema' in kwargs:
+            config_args['response_schema'] = kwargs.pop('response_schema')
+            config_args['response_mime_type'] = "application/json"
+
+        # Create the config object with all parameters
         config = GenerationConfig(**config_args)
 
+        # Define single generation task
         async def generate_single():
             try:
-                response = await self._model.generate_content_async(prompt, generation_config=config, **kwargs)
+                # Pass ONLY config and prompt. 'kwargs' contains other random args if any.
+                response = await self._model.generate_content_async(
+                    prompt, 
+                    generation_config=config, 
+                    **kwargs
+                )
                 return response.text if response.text else ""
             except Exception as e:
                 print(f"Error during async generation: {e}")
                 return ""
 
+        # Run tasks
         tasks = [generate_single() for _ in range(n)]
         results = await asyncio.gather(*tasks)
         return [r for r in results if r]
@@ -43,11 +62,13 @@ class GeminiProvider(LogitsProvider, SamplerProvider):
     # --- 2. Sync Method (Required by Interface) ---
     def sample(self, prompt: str, n: int = 1, **kwargs: Any) -> List[str]:
         """Sync version (not used by pipeline currently but required by interface)."""
-        # We can implement it simply by running the async version if needed, 
-        # or just keep the old loop logic.
         config_args = {}
         if 'temperature' in kwargs:
             config_args['temperature'] = kwargs.pop('temperature')
+        if 'response_schema' in kwargs:
+            config_args['response_schema'] = kwargs.pop('response_schema')
+            config_args['response_mime_type'] = "application/json"
+        
         config = GenerationConfig(**config_args)
         
         outputs = []

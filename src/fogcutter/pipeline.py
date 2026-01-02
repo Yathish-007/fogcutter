@@ -4,6 +4,7 @@ from typing import Dict, Any, Optional
 from src.fogcutter.config import settings
 from src.fogcutter.providers.gemini import GeminiProvider
 from src.fogcutter.blackbox.consistency import semantic_consistency_score
+from src.fogcutter.blackbox.reflection import self_reflection_score
 
 class FogCutterPipeline:
     def __init__(self):
@@ -33,11 +34,16 @@ class FogCutterPipeline:
         # Consistency check is fast and local, so it can stay sync
         # (or you could wrap it in asyncio.to_thread if it blocks too long)
         consistency_score = semantic_consistency_score(answers)
+        best_answer = answers[0]
+        reflection_score = await self_reflection_score(self.provider, query, best_answer)
+        
+        status = "CONFIDENT" if (consistency_score > 0.8 and reflection_score > 0.5) else "UNCERTAIN"
 
         return {
             "query": query,
             "consistency_score": consistency_score,
-            "status": "CONFIDENT" if consistency_score > 0.8 else "UNCERTAIN",
+            "status": status,
             "answers": answers,
+            "reflection_score": reflection_score,
             "best_answer": answers[0] if answers else ""
         }

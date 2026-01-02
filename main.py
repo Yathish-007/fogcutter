@@ -27,7 +27,8 @@ async def main():
             # AWAIT the pipeline run
             result = await pipeline.run(query) 
             
-            print(f"  -> Score:  {result['consistency_score']:.4f} ({result['status']})")
+            print(f"  -> Consistency Score:  {result['consistency_score']:.4f} ({result['status']})")
+            print(f"  -> Reflection Score:  {result.get('reflection_score', 0.0):.4f}")
             print(f"  -> Answer: {result['best_answer'][:100]}...")
             
         except Exception as e:
