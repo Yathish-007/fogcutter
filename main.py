@@ -27,9 +27,15 @@ async def main():
             # AWAIT the pipeline run
             result = await pipeline.run(query) 
             
-            print(f"  -> Consistency Score:  {result['consistency_score']:.4f} ({result['status']})")
-            print(f"  -> Reflection Score:  {result.get('reflection_score', 0.0):.4f}")
-            print(f"  -> Answer: {result['best_answer'][:100]}...")
+            metrics = result.get("metrics", {})
+            
+            print(f"  -> Consistency: {metrics.get('consistency_score', 0.0):.4f}")
+            print(f"  -> Reflection:  {metrics.get('reflection_score', 0.0):.4f}")
+            print(f"  -> Perplexity:  {metrics.get('perplexity', 0.0):.4f} (Lower is better)")
+            print(f"  -> Entropy:     {metrics.get('entropy', 0.0):.4f}")
+            print(f"  -> STATUS:      {result['status']}")
+            print(f"  -> Answer:      {result['best_answer'][:100]}...")
+            
             
         except Exception as e:
             print(f"  -> Error: {e}")

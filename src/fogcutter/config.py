@@ -28,7 +28,7 @@ class FogcutterSettings(BaseSettings):
     openai_api_key: Optional[str] = None
     gemini_model: str = "gemini-2.5-flash"
     gemini_project_id: Optional[str] = None
-    gemini_vertex_ai: bool = False
+    gemini_vertex_ai: bool = True
 
     # Metric defaults
     n_samples: int = 5  # For self-consistency, semantic entropy
