@@ -4,9 +4,7 @@
 
 ## Features
 - **White-Box (Logits):** 
-  - Token Probability & Entropy
-  - Perplexity
-  - LogU (Chen et al., 2025)
+  -  Entropy
 - **Black-Box (Sampling):** 
   - Self-Consistency (Wang et al., 2022)
   - Semantic Entropy (Kuhn et al., 2023)
