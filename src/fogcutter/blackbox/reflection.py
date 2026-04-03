@@ -1,18 +1,20 @@
 import json
-from src.fogcutter.providers.gemini import GeminiProvider
-from src.fogcutter.models import ReflectionResponse
+from src.fogcutter.providers.gemini import SamplerProvider
+from src.fogcutter.models import REFLECTION_SCHEMA
 
-async def self_reflection_score(provider: GeminiProvider, query: str, answer: str) -> float:
+async def self_reflection_score(provider: SamplerProvider, query: str, answer: str) -> float:
     
+    """
+    Asks the model to grade its own answer on a scale of 0.0 to 1.0.
+    """
     prompt = f"""
-    Review the following Q&A pair.
+    Rate the following answer to the user's question on a scale from 0.0 to 1.0.
     
     Question: {query}
-    Proposed Answer: {answer}
+    Answer: {answer}
     
-    Task:
-    1. Analyze if the answer is factually correct.
-    2. Provide a confidence score (0.0 to 1.0).
+    Return strictly JSON with 'score' (float) and 'reason' (string).
+    Example: {{"score": 0.9, "reason": "Accurate and complete"}}
     """
     
     try:
@@ -24,20 +26,24 @@ async def self_reflection_score(provider: GeminiProvider, query: str, answer: st
             prompt, 
             n=1, 
             temperature=0.0,
-            response_schema=ReflectionResponse # Pass the Class itself (supported in newer Google SDKs)
+            response_schema=REFLECTION_SCHEMA # Pass the Class itself (supported in newer Google SDKs)
         )
         
         if not response_list:
             return 0.5 
-        print("hitting here",response_list)
-        raw_text = response_list[0].strip()
-        
-        # Now raw_text is GUARANTEED to be JSON (no markdown backticks usually)
-        # We can parse it directly
-        reflection = ReflectionResponse.model_validate_json(raw_text)
-        
-        return reflection.score
-            
+        first_result = response_list[0]
+        if isinstance(first_result, dict):
+            raw_text = first_result.get("text", "").strip()
+        else:
+            raw_text = str(first_result).strip()
+
+        if raw_text.startswith("```"):
+            raw_text = raw_text.strip("`").replace("json", "").strip()
+
+        data = json.loads(raw_text)
+        return float(data.get("score", 0.0))
+
     except Exception as e:
         print(f"Reflection error: {e}")
         return 0.0
+        

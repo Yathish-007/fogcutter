@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field
+# src/fogcutter/models.py
 
-class ReflectionResponse(BaseModel):
-    """
-    Schema for self-reflection output.
-    """
-    reasoning: str = Field(..., description="Short analysis of factual correctness")
-    # REMOVED ge=0.0 and le=1.0 to avoid "Unknown field: maximum" error
-    score: float = Field(..., description="Confidence score between 0.0 and 1.0")
+# This must be a simple dictionary now
+REFLECTION_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "score": {"type": "NUMBER"},
+        "reason": {"type": "STRING"}
+    },
+    "required": ["score", "reason"]
+}

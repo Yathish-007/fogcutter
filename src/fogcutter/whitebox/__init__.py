@@ -1,3 +1,4 @@
-from .entropy import token_entropy
+# src/fogcutter/whitebox/__init__.py
 
-__all__ = ["token_entropy"]
+from .perplexity import calculate_perplexity
+from .entropy import calculate_predictive_entropy 
